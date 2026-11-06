@@ -1,5 +1,5 @@
 import unittest
-from validation import validate_ingestion_params
+from validation import validate_ingestion_params, validate_required_columns
 
 class TestIngestionParams(unittest.TestCase):
     def test_invalid_month(self):
@@ -42,3 +42,19 @@ class TestIngestionParams(unittest.TestCase):
                         month=1,
                         source_sha256=invalid_hash
                     )
+
+class TestRequiredColumns(unittest.TestCase):
+    def test_required_columns_present(self):
+        result = validate_required_columns(
+            actual_columns=["YEAR", "MONTH", "FL_DATE", "EXTRA"],
+            required_columns=["YEAR", "MONTH", "FL_DATE"],
+        )
+        self.assertIsNone(result)
+
+    
+    def test_required_columns_missing(self):
+        with self.assertRaisesRegex(ValueError, "FL_DATE"):
+            validate_required_columns(
+                actual_columns=["YEAR", "MONTH"],
+                required_columns=["YEAR", "MONTH", "FL_DATE"]
+            )

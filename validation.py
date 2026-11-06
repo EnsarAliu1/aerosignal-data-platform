@@ -18,3 +18,16 @@ def validate_ingestion_params(
 
     if not re.fullmatch(r"[a-fA-F0-9]{64}", source_sha256):
         raise ValueError("Invalid SHA256")
+
+
+def validate_required_columns(
+    actual_columns: list[str],
+    required_columns: list[str]
+) -> None:
+    """
+    Check that all required columns exist.
+    Raise ValueError if any are missing.
+    """
+    missing = set(required_columns) - set(actual_columns)
+    if missing:
+        raise ValueError(f"Missing columns: {sorted(missing)}")
