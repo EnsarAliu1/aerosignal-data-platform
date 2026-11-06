@@ -11,12 +11,13 @@ class TestIngestionParams(unittest.TestCase):
             )
 
     def test_valid_parameters(self):
-        with self.assertRaises(ValueError):
-            validate_ingestion_params(
-                year=2025,
-                month=1,
-                source_sha256="a" * 64
-            )
+        result = validate_ingestion_params(
+            year=2025,
+            month=1,
+            source_sha256="a" * 64
+        )
+
+        self.assertIsNone(result)
 
     def test_invalid_year(self):
         with self.assertRaises(ValueError):
