@@ -1,5 +1,9 @@
+import hashlib
 import unittest
-from validation import validate_ingestion_params, validate_required_columns
+from validation import validate_ingestion_params, validate_required_columns, validate_file_checksum
+
+import tempfile
+from pathlib import Path
 
 class TestIngestionParams(unittest.TestCase):
     def test_invalid_month(self):
@@ -58,3 +62,30 @@ class TestRequiredColumns(unittest.TestCase):
                 actual_columns=["YEAR", "MONTH"],
                 required_columns=["YEAR", "MONTH", "FL_DATE"]
             )
+
+
+class TestFileChecksum(unittest.TestCase):
+    def test_valid_checksum(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = Path(tmp) / "sample.csv"
+            test_file.write_text("YEAR,MONTH\n2025,1\n")
+
+            actual = hashlib.sha256(test_file.read_bytes()).hexdigest()
+
+            result = validate_file_checksum(
+                source_path=str(test_file),
+                expected_sha256=actual
+            )
+            self.assertIsNone(result)
+
+
+    def test_invalid_checksum(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = Path(tmp) / "sample.csv"
+            test_file.write_text("YEAR,MONTH\n2025,1\n")
+
+            with self.assertRaisesRegex(ValueError, "Source SHA256 mismatch"):
+                result = validate_file_checksum(
+                    source_path=str(test_file),
+                    expected_sha256="0" * 64
+                )

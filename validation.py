@@ -1,4 +1,5 @@
 import re
+import hashlib
 
 def validate_ingestion_params(
     year: int,
@@ -31,3 +32,22 @@ def validate_required_columns(
     missing = set(required_columns) - set(actual_columns)
     if missing:
         raise ValueError(f"Missing columns: {sorted(missing)}")
+
+
+def validate_file_checksum(
+    source_path: str,
+    expected_sha256: str
+) -> None:
+    """
+    Verify file content against expected SHA256.
+    Raise ValueError on mismatch
+    """
+    digest = hashlib.sha256()
+
+    with open(source_path, "rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+
+    if digest.hexdigest() != expected_sha256.lower():
+        raise ValueError("Source SHA256 mismatch")
+
