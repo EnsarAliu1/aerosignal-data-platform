@@ -117,7 +117,7 @@ def ingest_bts_month(
             .format("delta")
             .mode("overwrite")
             .option("replaceWhere", predicate)
-            .saveAsTable(TABLE_NAME)
+            .saveAsTable(table_name)
         )
 
     return row_count
