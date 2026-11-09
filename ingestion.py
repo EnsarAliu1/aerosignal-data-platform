@@ -30,6 +30,7 @@ def ingest_bts_month(
     year: int,
     month: int,
     source_sha256: str,
+    table_name: str = TABLE_NAME,
 ) -> int:
     """
         Ingest BTS monthly flights inot Bronze Delta table.
@@ -98,13 +99,13 @@ def ingest_bts_month(
     )
 
     # 7. Save to Delta
-    if not spark.catalog.tableExists(TABLE_NAME):
+    if not spark.catalog.tableExists(table_name):
         (
             bronze_df.write
             .format("delta")
             .mode("append")
             .partitionBy("_source_year", "_source_month")
-            .saveAsTable(TABLE_NAME)
+            .saveAsTable(table_name)
         )
     else:
         predicate = (
